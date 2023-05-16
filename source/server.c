@@ -5,7 +5,7 @@
 
 int validateRecivedContent(int personnr, char *ip, char *contentType, char *accept, char *name)
 {
-    if (personnr > 9999 || personnr < 999)
+    if (personnr > 9999 || personnr <= 999)
     {
         printf("Invalid personnr\n");
         return 1;
