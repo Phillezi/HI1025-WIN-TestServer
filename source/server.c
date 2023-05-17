@@ -83,11 +83,11 @@ int main()
 
         printf("Client connected: %s:%d\n", inet_ntoa(clientAddr.sin_addr), ntohs(clientAddr.sin_port));
         int recvPersonnummer = 0;
-        char recvOmLabb;
-        char recvIpAddress[21];
-        char recvContentType[512];
-        char recvAccept[512];
-        char recvName[512];
+        char recvOmLabb = 0;
+        char recvIpAddress[21] = {0};
+        char recvContentType[512] = {0};
+        char recvAccept[512] = {0};
+        char recvName[512] = {0};
 
         if ((bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0)) > 0)
             ;
