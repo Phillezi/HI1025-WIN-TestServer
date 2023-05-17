@@ -91,7 +91,7 @@ int main()
 
         if ((bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0)) > 0)
             ;
-        sscanf(buffer, "POST /api/1.0/pass/%d%c HTTP/1.1\nHOST: %20s\nContent-Type: %511[^\n]%*c\nAccept: %511[^\n]%*c\n{name : %511[^}]%*c",
+        sscanf(buffer, "POST /api/1.0/pass/%d%c HTTP/1.1\nHost: %20s\nContent-Type: %511[^\n]%*c\nAccept: %511[^\n]%*c\n{name : %511[^}]%*c",
                &recvPersonnummer, &recvOmLabb, recvIpAddress, recvContentType, recvAccept, recvName);
         printf("Recived:\n\tPersonnummer:\t\t%d\n\tHost:\t\t\t%s\n\tContent-type:\t\t%s\n\tAccept:\t\t\t%s\n\tName:\t\t\t%s\n\n",
                recvPersonnummer, recvIpAddress, recvContentType, recvAccept, recvName);
