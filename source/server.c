@@ -12,6 +12,7 @@ int validateRecivedContent(int personnr, char *ip, char *contentType, char *acce
     }
 
     // struntar i ip koll för tillfället
+    
     if (strcmp(contentType, "application/json"))
     {
         printf("Invalid Content-Type\n");
@@ -83,34 +84,54 @@ int main()
         printf("Client connected: %s:%d\n", inet_ntoa(clientAddr.sin_addr), ntohs(clientAddr.sin_port));
         int recvPersonnummer = 0;
         char recvOmLabb;
-        char recvIpAddress[16];
+        char recvIpAddress[21];
         char recvContentType[512];
         char recvAccept[512];
         char recvName[512];
 
         if ((bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0)) > 0)
             ;
-        sscanf(buffer, "POST /api/1.0/pass/%d%c HTTP/1.1\nHOST: %15s\nContent-Type: %511s\nAccept: %511s\n{name : %511[^}]%*c",
+        sscanf(buffer, "POST /api/1.0/pass/%d%c HTTP/1.1\nHOST: %20s\nContent-Type: %511[^\n]%*c\nAccept: %511[^\n]%*c\n{name : %511[^}]%*c",
                &recvPersonnummer, &recvOmLabb, recvIpAddress, recvContentType, recvAccept, recvName);
         printf("Recived:\n\tPersonnummer:\t\t%d\n\tHost:\t\t\t%s\n\tContent-type:\t\t%s\n\tAccept:\t\t\t%s\n\tName:\t\t\t%s\n\n",
                recvPersonnummer, recvIpAddress, recvContentType, recvAccept, recvName);
-
-        if (validateRecivedContent(recvPersonnummer, recvIpAddress, recvContentType, recvAccept, recvName) == 0)
+        if (strstr(buffer, "User-Agent:"))
         {
-            strcpy(buffer, "Well done! B-)\n");
+            char *html;
+            FILE *fp;
+            fp = fopen("res/index.html", "r");
+            if (fp)
+            {
+                fseek(fp, 0L, SEEK_END);
+                long numbytes = ftell(fp);
+                fseek(fp, 0L, SEEK_SET);
+
+                html = (char *)calloc(numbytes, sizeof(char));
+                if (html == NULL)
+                    return 1;
+
+                fread(html, sizeof(char), numbytes, fp);
+                fclose(fp);
+            }
+            sprintf(buffer, "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: %d\nDate: Mon, 17 May 2023 12:00:00 GMT\n\n%s", ((int)strlen(html)), html);
+            printf("Client used a browser, responding with code 200\n");
+            free(html);
+        }
+        else if (validateRecivedContent(recvPersonnummer, recvIpAddress, recvContentType, recvAccept, recvName) == 0)
+        {
+            strcpy(buffer, "Well done! B-)");
             printf("Message was correct\n");
             FILE *fp;
             fp = fopen("res/lab_4_done.txt", "a+");
-            if(fp)
+            if (fp)
             {
-                fprintf(fp,"Namn: %s, Personnummer: %d, Omlabb: %c\n", recvName, recvPersonnummer, recvOmLabb);
+                fprintf(fp, "Namn: %s, Personnummer: %d, Omlabb: %c\n", recvName, recvPersonnummer, recvOmLabb);
                 fclose(fp);
             }
-            
         }
         else
         {
-            strcpy(buffer, "Try again, :-(\n");
+            strcpy(buffer, "Try again, :-(");
             printf("Message was wrong\n");
         }
 
