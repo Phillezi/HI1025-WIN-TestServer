@@ -3,16 +3,25 @@
 #include <string.h>
 #include <stdbool.h>
 
-int validateRecivedContent(int personnr, char *ip, char *contentType, char *accept, char *name)
+int validateRecivedContent(char *personnr, char *ip, char *contentType, char *accept, char *name)
 {
-    if (personnr > 9999 || personnr <= 999)
+
+    if (strlen(personnr) != 4)
     {
         printf("Invalid personnr\n");
         return 1;
     }
+    for (int i = 0; i < 4; i++)
+    {
+        if (personnr[i] > '9' || personnr[i] < '0')
+        {
+            printf("Invalid personnr\n");
+            return 1;
+        }
+    }
 
     // struntar i ip koll för tillfället
-    
+
     if (strcmp(contentType, "application/json"))
     {
         printf("Invalid Content-Type\n");
@@ -82,7 +91,7 @@ int main()
         }
 
         printf("Client connected: %s:%d\n", inet_ntoa(clientAddr.sin_addr), ntohs(clientAddr.sin_port));
-        int recvPersonnummer = 0;
+        char recvPersonnummer[4] = {0};
         char recvOmLabb = 0;
         char recvIpAddress[21] = {0};
         char recvContentType[512] = {0};
@@ -91,9 +100,9 @@ int main()
 
         if ((bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0)) > 0)
             ;
-        sscanf(buffer, "POST /api/1.0/pass/%d%c HTTP/1.1\nHost: %20s\nContent-Type: %511[^\n]%*c\nAccept: %511[^\n]%*c\n{name : %511[^}]%*c",
-               &recvPersonnummer, &recvOmLabb, recvIpAddress, recvContentType, recvAccept, recvName);
-        printf("Recived:\n\tPersonnummer:\t\t%d\n\tHost:\t\t\t%s\n\tContent-type:\t\t%s\n\tAccept:\t\t\t%s\n\tName:\t\t\t%s\n\n",
+        sscanf(buffer, "POST /api/1.0/pass/%s%c HTTP/1.1\nHost: %20s\nContent-Type: %511[^\n]%*c\nAccept: %511[^\n]%*c\n{name : %511[^}]%*c",
+               recvPersonnummer, &recvOmLabb, recvIpAddress, recvContentType, recvAccept, recvName);
+        printf("Recived:\n\tPersonnummer:\t\t%s\n\tHost:\t\t\t%s\n\tContent-type:\t\t%s\n\tAccept:\t\t\t%s\n\tName:\t\t\t%s\n\n",
                recvPersonnummer, recvIpAddress, recvContentType, recvAccept, recvName);
         if (strstr(buffer, "User-Agent:"))
         {
@@ -125,7 +134,7 @@ int main()
             fp = fopen("res/lab_4_done.txt", "a+");
             if (fp)
             {
-                fprintf(fp, "Namn: %s, Personnummer: %d, Omlabb: %c\n", recvName, recvPersonnummer, recvOmLabb);
+                fprintf(fp, "Namn: %s, Personnummer: %s, Omlabb: %c\n", recvName, recvPersonnummer, recvOmLabb);
                 fclose(fp);
             }
         }
